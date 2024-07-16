@@ -72,12 +72,10 @@ const SideNavbar = () => {
                   <a href="#">Profile</a>
                 </li>
                 <li className="drop-items">
-                  {/* <Link to="/cart">Cart</Link> */}
-                  <a href="">Cart</a>
+                  <Link to="/cart">Cart</Link>
                 </li>
                 <li className="drop-items">
-                  {/* <Link to="/pricing">Membership</Link> */}
-                  <a href="">Membership</a>
+                  <Link to="/pricing">Membership</Link>
                 </li>
                 <li className="drop-items">
                   <a href="#">
