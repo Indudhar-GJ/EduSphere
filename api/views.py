@@ -150,6 +150,29 @@ def get_chapter_no(request, id):
     })
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_bought_courses(request):
+    user = request.user
+    bought_courses = BoughtCourses.objects.filter(cart__user=user)
+    course_ids = bought_courses.values_list('course_id', flat=True)
+    courses = Course.objects.filter(id__in=course_ids)
+    serializer = CourseSerializer(courses, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_unbought_courses(request):
+    user = request.user
+    bought_course_ids = BoughtCourses.objects.filter(
+        cart__user=user).values_list('course_id', flat=True)
+    unbought_courses = Course.objects.exclude(
+        id__in=bought_course_ids).order_by('-rating')[:5]
+    serializer = CourseSerializer(unbought_courses, many=True)
+    return Response(serializer.data)
+
+
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer

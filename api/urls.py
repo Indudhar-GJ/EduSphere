@@ -19,5 +19,7 @@ urlpatterns = [
          get_course, name='get_course'),
     path('courses/<int:id>/<int:chapterId>/',
          get_course_chapters, name='course-chapters'),
+    path('bought_courses/', get_bought_courses, name='get_bought_courses'),
+    path('top5_courses/', get_unbought_courses, name='get_unbought_courses'),
     path('', include(router.urls)),
 ]

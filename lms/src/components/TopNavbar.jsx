@@ -9,7 +9,7 @@ const TopNavbar = ({ title }) => {
   return (
     <div>
       <TopNav>
-        <h1>{title}</h1>
+        <h1 style={{ fontSize: "260%" }}>{title}</h1>
         <TopNavRight>
           <div className="search">
             <input type="text" name="" id="serch" placeholder="search" />
@@ -29,8 +29,8 @@ const TopNav = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
   padding-left: 25px;
+  height: 90px;
 `;
 const TopNavRight = styled.div`
   display: flex;

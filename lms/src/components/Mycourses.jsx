@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import TopNavbar from "./TopNavbar";
 import SideNavbar from "./SideNavbar";
 import styled from "styled-components";
@@ -8,7 +8,9 @@ import { GiConsoleController } from "react-icons/gi";
 import { MdTimelapse } from "react-icons/md";
 import { ReactComponent as ReadingIcon } from "../images/reading-icon.svg";
 import CoursesHorizon from "./CoursesHorizon";
+import { Scrollbars } from "react-custom-scrollbars-2";
 import Course from "./Course";
+import axios from "axios";
 
 const Mycourses = () => {
   useEffect(() => {
@@ -18,6 +20,43 @@ const Mycourses = () => {
       console.log("not auth");
     }
   }, []);
+
+  const [boughtCourses, setBoughtCourses] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/dlearn/bought_courses/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((response) => {
+        setBoughtCourses(response.data);
+        // console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching bought courses:", error);
+      });
+  }, []);
+
+  const [topCourses, setTopCourses] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/dlearn/top5_courses/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((response) => {
+        setTopCourses(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching unbought courses:", error);
+      });
+  }, []);
+
   return (
     <Main>
       <SideNavbar />
@@ -54,34 +93,38 @@ const Mycourses = () => {
             <div className="enrolledcourses">
               <h3>Enrolled Courses</h3>
               <div className="ecdetail" style={{ margin: "0px 15px" }}>
-                <CoursesHorizon />
-                <hr />
-                <CoursesHorizon />
-                <hr />
-                <CoursesHorizon />
+                {boughtCourses.map((item, index) => (
+                  <>
+                    <CoursesHorizon
+                      key={item.id}
+                      id={item.id}
+                      title={item.topic}
+                      subject={item.subject}
+                    />
+                    <hr />
+                  </>
+                ))}
               </div>
             </div>
           </Left>
           <Right>
-            <h2>Top Courses</h2>
-            <Course
-              id="id"
-              subject="sub"
-              content="full content"
-              teacher="teach"
-            />
-            <Course
-              id="id"
-              subject="sub"
-              content="full content"
-              teacher="teach"
-            />
-            <Course
-              id="id"
-              subject="sub"
-              content="full content"
-              teacher="teach"
-            />
+            <h2>Top Rated Courses</h2>
+            <Scrollbars autoHide>
+              {topCourses.map((item, index) => (
+                <div className="topCourse">
+                  <Course
+                    key={item}
+                    id={item.id}
+                    subject={item.subject}
+                    content={item.topic}
+                    chapters={item.no_of_chapters}
+                    teacher={
+                      item.teacher.first_name + " " + item.teacher.last_name
+                    }
+                  />
+                </div>
+              ))}
+            </Scrollbars>
           </Right>
         </ThirdContainer>
       </SecondContainer>
@@ -103,7 +146,7 @@ const ThirdContainer = styled.div`
   margin: 15px 35px;
   display: grid;
   grid-template-columns: 9fr 4fr;
-  gap: 75px;
+  gap: 100px;
   /* margin-top: 80px; */
 `;
 const Left = styled.div`
@@ -139,10 +182,15 @@ const Left = styled.div`
   }
 `;
 const Right = styled.div`
+  margin-left: 50px;
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: start;
   flex-direction: column;
-  gap: 20px;
+  .topCourse {
+    margin: 20px 0;
+  }
+  overflow-y: auto;
+  height: 85vh;
   /* margin-top: -55px; */
 `;

@@ -4,18 +4,30 @@ import { ReactComponent as ReadingIcon } from "../images/reading-icon.svg";
 import { SlBookOpen } from "react-icons/sl";
 import { RiFilePaper2Line } from "react-icons/ri";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
-const CoursesHorizon = () => {
+const CoursesHorizon = ({ id, title, subject }) => {
+  let navigate = useNavigate();
+  const goToCourse = () => {
+    navigate(`/course/${id}/`);
+  };
+
   return (
     <>
-      <Main>
+      <Main
+        onClick={() => {
+          goToCourse();
+        }}
+        style={{ cursor: "pointer" }}
+      >
         <div className="icon">
           <ReadingIcon style={{ color: "#9747FF" }} />
         </div>
         <div className="details">
-          <p>title</p>
+          <p style={{ fontSize: "150%" }}>{title}</p>
+          <p>{subject}</p>
           <p>
-            Progress <progress id="completed" max="100" value="30"></progress>{" "}
+            Progress <progress id="completed" max="100" value="30"></progress>
           </p>
         </div>
         <div className="infobar">
@@ -41,6 +53,7 @@ const Main = styled.div`
   align-items: center;
   gap: 25px;
   width: auto;
+  margin: 5px 0;
   .icon {
     padding: 15px 20px;
     background-color: #e5d1ff;
