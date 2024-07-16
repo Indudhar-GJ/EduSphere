@@ -153,6 +153,7 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   gap: 25px;
+  margin-left: 25px;
   .progress > img {
     width: 100%;
   }

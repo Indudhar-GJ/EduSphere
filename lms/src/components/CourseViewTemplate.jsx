@@ -11,99 +11,116 @@ const CourseViewTemplate = () => {
   const [chapterData, setChapterData] = useState(null);
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
-  // const [chapterId, setChapterID] = useState(2);
   const { id, chapter } = useParams();
-  //   const location = useLocation();
-  //   const { id } = location.state;
-
   const [chapterId, setChapterId] = useState(chapter || 1);
   const [chapterCount, setChapterCount] = useState(0);
   const navigate = useNavigate();
 
   const [cart, setCart] = useState(null);
+  const [boughtCourses, setBoughtCourses] = useState([]);
+  const [locked, setLocked] = useState(true);
 
   useEffect(() => {
-    getUserCart().then((response) => {
-      setCart(response.data);
-      console.log(response.data);
-    });
+    const fetchCart = async () => {
+      try {
+        const response = await getUserCart();
+        setCart(response.data);
+      } catch (error) {
+        console.error("Error fetching user cart:", error);
+      }
+    };
+    fetchCart();
   }, []);
 
-  const handleAddItem = (courseId, quantity) => {
-    if (cart) {
-      addItemToCart(cart.id, courseId, quantity)
-        .then((response) => {
-          const updatedCart = {
-            id: response.data.cart_id,
-            courseIds: response.data.course_ids,
-          };
-          setCart(updatedCart);
-        })
-        .catch((error) => {
-          console.error("Error adding item to cart:", error);
-        });
+  const handleAddItem = async (courseId, quantity) => {
+    try {
+      if (cart) {
+        const response = await addItemToCart(cart.id, courseId, quantity);
+        const updatedCart = {
+          id: response.data.cart_id,
+          courseIds: response.data.course_ids,
+        };
+        setCart(updatedCart);
+      }
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
     }
   };
 
-  const handleRemoveItem = (courseId) => {
-    removeItemFromCart(cart.id, courseId).then((response) => {
+  const handleRemoveItem = async (courseId) => {
+    try {
+      const response = await removeItemFromCart(cart.id, courseId);
       setCart(response.data);
-    });
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
   };
 
   useEffect(() => {
-    if (localStorage.getItem("access_token") === null) {
+    if (!localStorage.getItem("access_token")) {
       window.location.href = "/login";
-    } else {
-      console.log("not auth");
     }
   }, []);
 
   useEffect(() => {
-    const fetchCourseChapter = async () => {
+    const fetchCourseData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/dlearn/courses/${id}/${chapterId}/`
-        );
-        setChapterData(response.data[0]);
+        const [courseResponse, chapterResponse, chapterCountResponse] =
+          await Promise.all([
+            axios.get(`http://localhost:8000/dlearn/courses/${id}/`),
+            axios.get(
+              `http://localhost:8000/dlearn/courses/${id}/${chapterId}/`
+            ),
+            axios.get(
+              `http://localhost:8000/dlearn/courses/chapterscount/${id}/`
+            ),
+          ]);
+
+        setCourseData(courseResponse.data[0]);
+        setChapterData(chapterResponse.data[0]);
+        setChapterCount(chapterCountResponse.data);
       } catch (error) {
-        console.error("Error fetching course:", error);
+        console.error("Error fetching course data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchCourse = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/dlearn/courses/${id}/`
-        );
-        setCourseData(response.data[0]);
-        // console.log(response);
-        // console.log(response.data[0]);
-      } catch (error) {
-        console.error("Error fetching course:", error);
-      }
-    };
     setLoading(true);
-    fetchCourseChapter();
-    fetchCourse();
-    setLoading(false);
+    fetchCourseData();
   }, [id, chapterId]);
 
   useEffect(() => {
-    const fetchChapterNo = async () => {
+    const fetchBoughtCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/dlearn/courses/chapterscount/${id}/`
+          "http://localhost:8000/dlearn/bought_courses/",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
         );
-        setChapterCount(response.data);
+        setBoughtCourses(response.data);
       } catch (error) {
-        console.error("Error fetching course:", error);
+        console.error("Error fetching bought courses:", error);
       }
     };
-    setLoading(true);
-    fetchChapterNo();
-    setLoading(false);
-  }, [id]);
+
+    fetchBoughtCourses();
+  }, []);
+
+  useEffect(() => {
+    try {
+      for (let i = 0; i < boughtCourses.length; i++) {
+        if (boughtCourses[i].id == id) {
+          setLocked(false);
+        }
+      }
+    } catch {
+      setLocked(true);
+    }
+  }, [boughtCourses, id]);
 
   useEffect(() => {
     if (chapterId !== chapter) {
@@ -118,7 +135,7 @@ const CourseViewTemplate = () => {
         <Container2>
           <Scrollbars autoHide>
             <h2>Chapters</h2>
-            {loading ? (
+            {!locked && loading ? (
               <LoadingPopup trigger={loading} setTrigger={setLoading}>
                 Loading...
               </LoadingPopup>
@@ -161,11 +178,22 @@ const CourseViewTemplate = () => {
               <p>ETA: {chapterData?.time_to_complete} hours</p>
             </div>
           </div>
-          <div className="chapter-content">
+          <div className={locked ? "locked-content" : "chapter-content"}>
             {loading ? (
               <LoadingPopup trigger={loading} setTrigger={setLoading}>
                 Loading...
               </LoadingPopup>
+            ) : locked ? (
+              <>
+                <LoadingPopup trigger={locked} setTrigger={setLocked}>
+                  <Link
+                    onClick={() => handleAddItem(courseData.id, 1)}
+                    to="/cart"
+                  >
+                    Buy This course to View
+                  </Link>
+                </LoadingPopup>
+              </>
             ) : (
               <ul>
                 <h1>{chapterData?.chapter_title}</h1>
@@ -184,7 +212,7 @@ export default CourseViewTemplate;
 const Container3 = styled.div`
   width: 100%;
   overflow-y: auto;
-  /* background-color: #e97a7a; */
+
   .head {
     display: flex;
     justify-content: space-between;
@@ -204,6 +232,25 @@ const Container3 = styled.div`
         margin: 10px 3px;
       }
     }
+  }
+  .locked-content {
+    height: 100%;
+    border-left: 1px solid #49bbbd;
+    padding: 15px 30px;
+    h1 {
+      margin: 20px 2px;
+    }
+    p {
+      line-height: 23px;
+      font-size: 110%;
+    }
+    background-image: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0)
+    );
+    box-shadow: 10px 10px 10px rgba(30, 30, 30, 0.5);
+    backdrop-filter: blur(10px);
   }
   .chapter-content {
     height: 100%;
@@ -226,7 +273,6 @@ const Container1 = styled.div`
   width: calc(100vw - 5vw);
   display: flex;
   gap: 40px;
-  /* background-color: #b12260; */
   height: 100vh;
 `;
 const Container2 = styled.div`
@@ -237,7 +283,6 @@ const Container2 = styled.div`
     display: flex;
     flex-direction: column;
     gap: 5px;
-    z-index: -2;
   }
   ul li {
     display: flex;
