@@ -4,6 +4,7 @@ import SideNavbar from "./SideNavbar";
 import Course from "./Course";
 import Popup from "./Popup";
 import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
+import axios from "axios";
 
 const options = [
   { value: "Option 1", label: "Option 1" },
@@ -52,6 +53,17 @@ const Cart = () => {
     removeItemFromCart(cartId, courseId).then((response) => {
       setCart(response.data.items);
     });
+  };
+
+  const handlePurchase = () => {
+    axios
+      .post(`http://localhost:8000/dlearn/carts/${cartId}/purchase_items/`)
+      .then((response) => {
+        alert(response.data.message);
+      })
+      .catch((error) => {
+        console.error("Error purchasing items:", error);
+      });
   };
 
   useEffect(() => {
@@ -170,7 +182,14 @@ const Cart = () => {
                     alignItems: "center",
                   }}
                 >
-                  <button type="submit">Pay Now</button>
+                  <button
+                    onClick={() => {
+                      handlePurchase();
+                    }}
+                    type="submit"
+                  >
+                    Pay Now
+                  </button>
                 </div>
               </Container5>
             </Container3>

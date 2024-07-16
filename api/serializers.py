@@ -37,3 +37,9 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
+
+
+class BoughtCoursesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BoughtCourses
+        fields = '__all__'

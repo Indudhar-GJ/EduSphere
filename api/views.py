@@ -196,6 +196,24 @@ class CartViewSet(viewsets.ModelViewSet):
 
         return Response({'cart_id': cart.id, 'course_ids': course_ids}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post'])
+    def purchase_items(self, request, pk=None):
+        user = request.user
+        cart = get_object_or_404(Cart, id=pk, user=user)
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        if not cart_items.exists():
+            return Response({'detail': 'No items in the cart to purchase'}, status=status.HTTP_400_BAD_REQUEST)
+
+        for item in cart_items:
+            BoughtCourses.objects.create(cart=cart, course=item.course)
+            item.delete()
+
+        bought_courses = BoughtCourses.objects.filter(cart=cart)
+        serializer = BoughtCoursesSerializer(bought_courses, many=True)
+
+        return Response({'message': 'Purchase completed successfully', 'bought_courses': serializer.data}, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

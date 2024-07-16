@@ -53,3 +53,9 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.course.subject} ({self.quantity})"
+
+
+class BoughtCourses(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    Bought_at = models.DateTimeField(auto_now_add=True)
