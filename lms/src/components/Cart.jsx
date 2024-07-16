@@ -17,29 +17,39 @@ const Cart = () => {
   const [giftPopup, setGiftPopup] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const [totalCartValue, setTotalCartValue] = useState(0);
+  const [cartId, setCartId] = useState(0);
+  const [delItmeId, setDelItemId] = useState(-1);
+
   useEffect(() => {
     getUserCart().then((response) => {
       setCart(response.data.items);
-      console.log(cart);
+      setCartId(response.data.id);
     });
   }, []);
 
   useEffect(() => {
-    console.log(cart.length);
-    for (let i = 0; i < cart.length; i++) {
-      setTotalCartValue((prev) => prev + cart[i].course.price);
+    try {
+      setTotalCartValue(0);
+      for (let i = 0; i < cart.length; i++) {
+        setTotalCartValue((prev) => prev + cart[i].course.price);
+      }
+    } catch {
+      setTotalCartValue(0);
     }
-    console.log("after loop");
+    getUserCart().then((response) => {
+      setCart(response.data.items);
+      setCartId(response.data.id);
+    });
   }, [cart]);
 
   const handleAddItem = (courseId, quantity) => {
-    addItemToCart(1, courseId, quantity).then((response) => {
+    addItemToCart(cartId, courseId, quantity).then((response) => {
       setCart(response.data.items);
     });
   };
 
   const handleRemoveItem = (courseId) => {
-    removeItemFromCart(1, courseId).then((response) => {
+    removeItemFromCart(cartId, courseId).then((response) => {
       setCart(response.data.items);
     });
   };
@@ -58,60 +68,67 @@ const Cart = () => {
       <Container1>
         <Container2>
           <h1>Cart</h1>
-          <p>
-            <span style={{ fontWeight: 800 }}>{cart.length} items</span> in your
-            cart
-          </p>
+          {cart?.length && (
+            <p>
+              <span style={{ fontWeight: 800 }}>{cart?.length || 0} items</span>
+              in your cart
+            </p>
+          )}
           <Container4>
-            <Container $cartItems={cart.length}>
-              <Table>
-                <Thead>
-                  <tr>
-                    <Th>S.no</Th>
-                    <Th>Product</Th>
-                    <Th>Price</Th>
-                    <Th>Rating</Th>
-                    <Th>Gift/Delete</Th>
-                  </tr>
-                </Thead>
-                <Tbody>
-                  {cart.map((item, index) => (
-                    <Tr key={item.id}>
-                      <Td>{index + 1}</Td>
-                      <Td>
-                        <div className="cartimg">
-                          <Course
-                            id={item.course.id}
-                            subject={item.course.subject}
-                            content={item.course.topic}
-                            teacher={item.course.teacher.first_name}
-                            chapters={item.course.no_of_chapters}
-                          />
-                        </div>
-                      </Td>
-                      <Td>&#8377; {item.course.price}</Td>
-                      <Td>{item.course.rating}</Td>
-                      <Td className="tabbtn">
-                        <button
-                          type="button"
-                          className="gift"
-                          onClick={() => setGiftPopup(true)}
-                        >
-                          Gift
-                        </button>
-                        <button
-                          type="button"
-                          className="del"
-                          onClick={() => setDeletePopup(true)}
-                        >
-                          Remove
-                        </button>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Container>
+            {cart?.length > 0 && (
+              <Container $cartItems={cart?.length || 0}>
+                <Table>
+                  <Thead>
+                    <tr>
+                      <Th>S.no</Th>
+                      <Th>Product</Th>
+                      <Th>Price</Th>
+                      <Th>Rating</Th>
+                      <Th>Gift/Delete</Th>
+                    </tr>
+                  </Thead>
+                  <Tbody>
+                    {cart.map((item, index) => (
+                      <Tr key={item.id}>
+                        <Td>{index + 1}</Td>
+                        <Td>
+                          <div className="cartimg">
+                            <Course
+                              id={item.course.id}
+                              subject={item.course.subject}
+                              content={item.course.topic}
+                              teacher={item.course.teacher.first_name}
+                              chapters={item.course.no_of_chapters}
+                            />
+                          </div>
+                        </Td>
+                        <Td>&#8377; {item.course.price}</Td>
+                        <Td>{item.course.rating}</Td>
+                        <Td className="tabbtn">
+                          <button
+                            type="button"
+                            className="gift"
+                            onClick={() => setGiftPopup(true)}
+                          >
+                            Gift
+                          </button>
+                          <button
+                            type="button"
+                            className="del"
+                            onClick={() => {
+                              setDeletePopup(true);
+                              setDelItemId(item.course.id);
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Container>
+            )}
             <Container3>
               <h2>Calculated Shipping</h2>
               <select
@@ -176,7 +193,13 @@ const Cart = () => {
             <button type="button" onClick={() => setDeletePopup(false)}>
               No
             </button>
-            <button type="button" onClick={() => setDeletePopup(false)}>
+            <button
+              type="button"
+              onClick={() => {
+                setDeletePopup(false);
+                handleRemoveItem(delItmeId);
+              }}
+            >
               Yes
             </button>
           </div>
@@ -258,7 +281,8 @@ const Container3 = styled.div`
   padding: 15px;
   border-radius: 10px;
   width: 300px;
-  height: 100%;
+  position: absolute;
+  right: 40px;
 `;
 
 const Container4 = styled.div`
@@ -291,7 +315,7 @@ const Container = styled.div`
   margin-top: 40px;
   width: 70%;
   margin-left: auto;
-  margin-right: auto;
+  margin-right: 400px;
   background-color: ${(props) =>
     props.$cartItems > 0 ? "#fff" : "transparent"};
   padding: 25px 10px;

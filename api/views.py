@@ -173,6 +173,11 @@ class CartViewSet(viewsets.ModelViewSet):
             cart_item.quantity += quantity
             cart_item.save()
 
+        existing_cart_item = CartItem.objects.filter(
+            cart=cart, course=course).first()
+        if existing_cart_item:
+            return Response({'detail': 'Item already present in cart'}, status=status.HTTP_400_BAD_REQUEST)
+
         cart_items = CartItem.objects.filter(cart=cart)
         course_ids = list(cart_items.values_list('course_id', flat=True))
 

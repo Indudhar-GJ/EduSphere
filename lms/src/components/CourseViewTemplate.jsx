@@ -3,7 +3,7 @@ import styled from "styled-components";
 import SideNavbar from "./SideNavbar";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingPopup from "./LoadingPopup";
 import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
 
@@ -46,7 +46,7 @@ const CourseViewTemplate = () => {
   };
 
   const handleRemoveItem = (courseId) => {
-    removeItemFromCart(1, courseId).then((response) => {
+    removeItemFromCart(cart.id, courseId).then((response) => {
       setCart(response.data);
     });
   };
@@ -150,9 +150,13 @@ const CourseViewTemplate = () => {
             </div>
             <div className="rt">
               <div className="addCartbtn">
-                <button onClick={() => handleAddItem(1, 1)} type="submit">
+                <button
+                  onClick={() => handleAddItem(courseData.id, 1)}
+                  type="submit"
+                >
                   Add To Cart
                 </button>
+                <Link to="/cart">Go To Cart</Link>
               </div>
               <p>ETA: {chapterData?.time_to_complete} hours</p>
             </div>
