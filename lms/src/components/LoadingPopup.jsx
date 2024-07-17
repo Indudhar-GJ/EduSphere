@@ -37,7 +37,7 @@ const Main = styled.div`
   .popup {
     position: fixed;
     top: 0;
-    left: 0;
+    left: 4vw;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
@@ -49,7 +49,7 @@ const Main = styled.div`
     border-radius: 15px;
     position: relative;
     padding: 32px;
-    width: 100%;
+    /* width: 100%; */
     max-width: 640px;
     background-color: #fff;
     .timg {

@@ -178,27 +178,29 @@ const CourseViewTemplate = () => {
               <p>ETA: {chapterData?.time_to_complete} hours</p>
             </div>
           </div>
-          <div className={locked ? "locked-content" : "chapter-content"}>
+          <div className="chapter-content">
             {loading ? (
               <LoadingPopup trigger={loading} setTrigger={setLoading}>
                 Loading...
               </LoadingPopup>
-            ) : locked ? (
-              <>
-                <LoadingPopup trigger={locked} setTrigger={setLocked}>
-                  <Link
-                    onClick={() => handleAddItem(courseData.id, 1)}
-                    to="/cart"
-                  >
-                    Buy This course to View
-                  </Link>
-                </LoadingPopup>
-              </>
             ) : (
-              <ul>
-                <h1>{chapterData?.chapter_title}</h1>
-                <p>{chapterData?.text_data}</p>
-              </ul>
+              <>
+                <ul className={locked ? "locked-content" : " "}>
+                  <h1>{chapterData?.chapter_title}</h1>
+                  <p>{chapterData?.text_data}</p>
+
+                  {locked && (
+                    <LoadingPopup trigger={locked} setTrigger={setLocked}>
+                      <Link
+                        onClick={() => handleAddItem(courseData.id, 1)}
+                        to="/cart"
+                      >
+                        Buy This course to View
+                      </Link>
+                    </LoadingPopup>
+                  )}
+                </ul>
+              </>
             )}
           </div>
         </Container3>
@@ -237,20 +239,16 @@ const Container3 = styled.div`
     height: 100%;
     border-left: 1px solid #49bbbd;
     padding: 15px 30px;
-    h1 {
+    /* h1 {
       margin: 20px 2px;
     }
     p {
       line-height: 23px;
       font-size: 110%;
+    } */
+    p {
+      filter: blur(5px);
     }
-    background-image: linear-gradient(
-      to bottom right,
-      rgba(255, 255, 255, 0.2),
-      rgba(255, 255, 255, 0)
-    );
-    box-shadow: 10px 10px 10px rgba(30, 30, 30, 0.5);
-    backdrop-filter: blur(10px);
   }
   .chapter-content {
     height: 100%;
