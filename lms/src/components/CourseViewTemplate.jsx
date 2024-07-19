@@ -7,6 +7,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingPopup from "./LoadingPopup";
 import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
 import BlurPopup from "./BlurPopup";
+import Quiz from "./Quiz";
+import Footer from "./Footer";
 
 const CourseViewTemplate = () => {
   const [chapterData, setChapterData] = useState(null);
@@ -186,109 +188,119 @@ const CourseViewTemplate = () => {
   }, [chapterId, chapter, id, navigate]);
 
   return (
-    <Main>
-      <SideNavbar />
-      <Container1>
-        <Container2>
-          <Scrollbars autoHide>
-            <h2>Chapters</h2>
-            {!locked && loading ? (
-              <LoadingPopup trigger={loading} setTrigger={setLoading}>
-                Loading...
-              </LoadingPopup>
-            ) : (
-              <ul>
-                {Array.from(
-                  { length: chapterCount?.chapter_count },
-                  (_, index) => (
-                    <li
-                      className={
-                        chapter == index + 1 ? "selected" : "notselected"
-                      }
-                      key={index + 1}
-                      onClick={() => setChapterId(index + 1)}
-                    >
-                      <p>Chapter : {index + 1}</p>
-                    </li>
-                  )
-                )}
-              </ul>
-            )}
-          </Scrollbars>
-        </Container2>
-        <Container3>
-          <div className="head">
-            <div className="lf">
-              <h1>{courseData?.topic}</h1>
-              <h3>{courseData?.subject}</h3>
-            </div>
-            <div className="rt">
-              <div className="addCartbtn">
-                <button
-                  onClick={() => handleAddItem(courseData.id, 1)}
-                  type="submit"
-                >
-                  Add To Cart
-                </button>
-                <Link to="/cart">Go To Cart</Link>
-              </div>
-              <p>ETA: {chapterData?.time_to_complete} hours</p>
-            </div>
-          </div>
-          <div className="chapter-content">
-            {loading ? (
-              <LoadingPopup trigger={loading} setTrigger={setLoading}>
-                Loading...
-              </LoadingPopup>
-            ) : (
-              <>
-                <ul
-                  className={
-                    locked || chapter > completedChapters + 1
-                      ? "locked-content"
-                      : " "
-                  }
-                >
-                  <h1>{chapterData?.chapter_title}</h1>
-                  <p>{chapterData?.text_data}</p>
-
-                  {locked ? (
-                    <BlurPopup trigger={locked} setTrigger={setLocked}>
-                      <Link
-                        onClick={() => handleAddItem(courseData.id, 1)}
-                        to="/cart"
+    <>
+      <Main>
+        <SideNavbar />
+        <Container1>
+          <Container2>
+            <Scrollbars autoHide>
+              <h2>Chapters</h2>
+              {!locked && loading ? (
+                <LoadingPopup trigger={loading} setTrigger={setLoading}>
+                  Loading...
+                </LoadingPopup>
+              ) : (
+                <ul>
+                  {Array.from(
+                    { length: chapterCount?.chapter_count },
+                    (_, index) => (
+                      <li
+                        className={
+                          chapter == index + 1 ? "selected" : "notselected"
+                        }
+                        key={index + 1}
+                        onClick={() => setChapterId(index + 1)}
                       >
-                        Buy This course to View
-                      </Link>
-                    </BlurPopup>
-                  ) : (
-                    chapter > completedChapters + 1 && (
-                      <BlurPopup
-                        trigger={chapter > completedChapters + 1}
-                        setTrigger={setLocked}
-                      >
-                        <Link
-                          onClick={() => {
-                            setChapterId(completedChapters + 1);
-                          }}
-                        >
-                          Complete Previous Chapter to unlock this.
-                        </Link>
-                      </BlurPopup>
+                        <p>Chapter : {index + 1}</p>
+                      </li>
                     )
                   )}
                 </ul>
-              </>
-            )}
-          </div>
-        </Container3>
-      </Container1>
-    </Main>
+              )}
+            </Scrollbars>
+          </Container2>
+          <Container3>
+            <div className="head">
+              <div className="lf">
+                <h1>{courseData?.topic}</h1>
+                <h3>{courseData?.subject}</h3>
+              </div>
+              <div className="rt">
+                <div className="addCartbtn">
+                  <button
+                    onClick={() => handleAddItem(courseData.id, 1)}
+                    type="submit"
+                  >
+                    Add To Cart
+                  </button>
+                  <Link to="/cart">Go To Cart</Link>
+                </div>
+                <p>ETA: {chapterData?.time_to_complete} hours</p>
+              </div>
+            </div>
+            <div className="chapter-content">
+              {loading ? (
+                <LoadingPopup trigger={loading} setTrigger={setLoading}>
+                  Loading...
+                </LoadingPopup>
+              ) : (
+                <>
+                  <ul
+                    className={
+                      locked || chapter > completedChapters + 1
+                        ? "locked-content"
+                        : " "
+                    }
+                  >
+                    <h1>{chapterData?.chapter_title}</h1>
+                    <p>{chapterData?.text_data}</p>
+
+                    {locked ? (
+                      <BlurPopup trigger={locked} setTrigger={setLocked}>
+                        <Link
+                          onClick={() => handleAddItem(courseData.id, 1)}
+                          to="/cart"
+                        >
+                          Buy This course to View
+                        </Link>
+                      </BlurPopup>
+                    ) : (
+                      chapter > completedChapters + 1 && (
+                        <BlurPopup
+                          trigger={chapter > completedChapters + 1}
+                          setTrigger={setLocked}
+                        >
+                          <Link
+                            onClick={() => {
+                              setChapterId(completedChapters + 1);
+                            }}
+                          >
+                            Complete Previous Chapter to unlock this.
+                          </Link>
+                        </BlurPopup>
+                      )
+                    )}
+                  </ul>
+                </>
+              )}
+              <Container4>
+                <Quiz />
+              </Container4>
+            </div>
+          </Container3>
+        </Container1>
+      </Main>
+      {/* <Footer /> */}
+    </>
   );
 };
 
 export default CourseViewTemplate;
 
+const Container4 = styled.div`
+  margin: 30px auto;
+  margin-bottom: 50px;
+`;
 const Container3 = styled.div`
   width: 100%;
   overflow-y: auto;
