@@ -58,4 +58,6 @@ class CartItem(models.Model):
 class BoughtCourses(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    completed_chapters = models.IntegerField(default=0)
+    total_chapters = models.IntegerField()
     Bought_at = models.DateTimeField(auto_now_add=True)

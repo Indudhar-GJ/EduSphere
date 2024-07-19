@@ -173,6 +173,34 @@ def get_unbought_courses(request):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_bought_courses_table_data(request, id):
+    user = request.user
+    bought_courses = BoughtCourses.objects.filter(
+        cart__user=user, course_id=id)
+    serializer = BoughtCoursesSerializer(bought_courses, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def increment_completed_chapters(request):
+    user = request.user
+    course_id = request.data.get('course_id')
+
+    if not course_id:
+        return Response({'detail': 'Course ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    bought_course = get_object_or_404(
+        BoughtCourses, cart__user=user, course_id=course_id)
+
+    bought_course.completed_chapters += 1
+    bought_course.save()
+
+    return Response({'message': 'Completed chapters incremented', 'completed_chapters': bought_course.completed_chapters}, status=status.HTTP_200_OK)
+
+
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
@@ -229,7 +257,15 @@ class CartViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'No items in the cart to purchase'}, status=status.HTTP_400_BAD_REQUEST)
 
         for item in cart_items:
-            BoughtCourses.objects.create(cart=cart, course=item.course)
+            course = item.course
+            total_chapters = CourseChapter.objects.filter(
+                course=course).count()
+            BoughtCourses.objects.create(
+                cart=cart,
+                course=course,
+                completed_chapters=0,
+                total_chapters=total_chapters
+            )
             item.delete()
 
         bought_courses = BoughtCourses.objects.filter(cart=cart)

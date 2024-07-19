@@ -6,6 +6,7 @@ import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingPopup from "./LoadingPopup";
 import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
+import BlurPopup from "./BlurPopup";
 
 const CourseViewTemplate = () => {
   const [chapterData, setChapterData] = useState(null);
@@ -14,11 +15,13 @@ const CourseViewTemplate = () => {
   const { id, chapter } = useParams();
   const [chapterId, setChapterId] = useState(chapter || 1);
   const [chapterCount, setChapterCount] = useState(0);
-  const navigate = useNavigate();
-
   const [cart, setCart] = useState(null);
-  const [boughtCourses, setBoughtCourses] = useState([]);
   const [locked, setLocked] = useState(true);
+  const [boughtCourses, setBoughtCourses] = useState([]);
+  const [completedChapters, setCompletedChapters] = useState(0);
+  const [temp, setTemp] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -78,6 +81,7 @@ const CourseViewTemplate = () => {
 
         setCourseData(courseResponse.data[0]);
         setChapterData(chapterResponse.data[0]);
+        // console.log(chapterResponse.data[0]);
         setChapterCount(chapterCountResponse.data);
       } catch (error) {
         console.error("Error fetching course data:", error);
@@ -108,7 +112,60 @@ const CourseViewTemplate = () => {
     };
 
     fetchBoughtCourses();
+
+    // for (let i = 0; i < temp.length; i++) {
+    //   if (temp[i].course == id) {
+    //     setCompletedChapters(temp[i].completed_chapters);
+    //   }
+    // }
+    // console.log(completedChapters);
   }, []);
+
+  useEffect(() => {
+    const fetchBoughtCoursesTableData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/dlearn/bought_courses_table_data/${id}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        );
+        setCompletedChapters(response.data[0].completed_chapters);
+        // console.log(response.data[0].completed_chapters);
+        console.log(completedChapters);
+
+        // for (let i = 0; i < temp.length; i++) {
+        //   if (temp[i].course == id) {
+        //     console.log(temp[i]);
+        //     setCompletedChapters(temp[i].completed_chapters);
+        //   }
+        // }
+        // console.log(completedChapters);
+      } catch (error) {
+        console.error("Error fetching bought courses:", error);
+      }
+    };
+    fetchBoughtCoursesTableData();
+  }, [id]);
+
+  const incrementChapters = async () => {
+    try {
+      const response = await axios.post("/increment_completed_chapters/", {
+        course_id: id,
+      });
+      // setMessage(response.data.message);
+      setCompletedChapters(response.data.completed_chapters);
+      // console.log(response.data);
+    } catch (error) {
+      if (error.response) {
+        console.log(error.response.data.detail);
+      } else {
+        console.log("An error occurred");
+      }
+    }
+  };
 
   useEffect(() => {
     try {
@@ -146,7 +203,7 @@ const CourseViewTemplate = () => {
                   (_, index) => (
                     <li
                       className={
-                        chapterId === index + 1 ? "selected" : "notselected"
+                        chapter == index + 1 ? "selected" : "notselected"
                       }
                       key={index + 1}
                       onClick={() => setChapterId(index + 1)}
@@ -185,19 +242,40 @@ const CourseViewTemplate = () => {
               </LoadingPopup>
             ) : (
               <>
-                <ul className={locked ? "locked-content" : " "}>
+                <ul
+                  className={
+                    locked || chapter > completedChapters + 1
+                      ? "locked-content"
+                      : " "
+                  }
+                >
                   <h1>{chapterData?.chapter_title}</h1>
                   <p>{chapterData?.text_data}</p>
 
-                  {locked && (
-                    <LoadingPopup trigger={locked} setTrigger={setLocked}>
+                  {locked ? (
+                    <BlurPopup trigger={locked} setTrigger={setLocked}>
                       <Link
                         onClick={() => handleAddItem(courseData.id, 1)}
                         to="/cart"
                       >
                         Buy This course to View
                       </Link>
-                    </LoadingPopup>
+                    </BlurPopup>
+                  ) : (
+                    chapter > completedChapters + 1 && (
+                      <BlurPopup
+                        trigger={chapter > completedChapters + 1}
+                        setTrigger={setLocked}
+                      >
+                        <Link
+                          onClick={() => {
+                            setChapterId(completedChapters + 1);
+                          }}
+                        >
+                          Complete Previous Chapter to unlock this.
+                        </Link>
+                      </BlurPopup>
+                    )
                   )}
                 </ul>
               </>
@@ -251,7 +329,7 @@ const Container3 = styled.div`
     }
   }
   .chapter-content {
-    height: 100%;
+    height: auto;
     border-left: 1px solid #49bbbd;
     padding: 15px 30px;
     h1 {
