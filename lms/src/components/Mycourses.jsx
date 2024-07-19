@@ -13,6 +13,13 @@ import Course from "./Course";
 import axios from "axios";
 
 const Mycourses = () => {
+  const [topCourses, setTopCourses] = useState([]);
+  const [boughtCourses, setBoughtCourses] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const [learningHours, setLearningHours] = useState(0);
+  const [totalChapters, setTotalChapters] = useState(0);
+  const [totalCompletedChapters, setTotalCompletedChapters] = useState(0);
+
   useEffect(() => {
     if (localStorage.getItem("access_token") === null) {
       window.location.href = "/login";
@@ -21,7 +28,21 @@ const Mycourses = () => {
     }
   }, []);
 
-  const [boughtCourses, setBoughtCourses] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/dlearn/top5_courses/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((response) => {
+        setTopCourses(response.data);
+        // console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching unbought courses:", error);
+      });
+  }, []);
 
   useEffect(() => {
     axios
@@ -33,29 +54,54 @@ const Mycourses = () => {
       .then((response) => {
         setBoughtCourses(response.data);
         // console.log(response.data);
+        // for (let i = 0; i < boughtCourses.length; i++) {
+        //   fetchBoughtCoursesTableData(boughtCourses[i].id);
+        // }
       })
       .catch((error) => {
         console.error("Error fetching bought courses:", error);
       });
   }, []);
 
-  const [topCourses, setTopCourses] = useState([]);
+  useEffect(() => {
+    let temp = 0;
+    boughtCourses.forEach((course) => {
+      course.chapters.forEach((chapter) => {
+        temp += chapter.time_to_complete;
+      });
+    });
+    setLearningHours(temp);
+  }, [boughtCourses]);
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/dlearn/top5_courses/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      })
+      .get(
+        "http://localhost:8000/dlearn/get_bought_courses_table_data_without_id/",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      )
       .then((response) => {
-        setTopCourses(response.data);
+        setProgress(response.data);
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching unbought courses:", error);
+        console.error("Error fetching bought courses:", error);
       });
   }, []);
+
+  useEffect(() => {
+    let cc = 0,
+      tc = 0;
+    progress.forEach((course) => {
+      cc += course.completed_chapters;
+      tc += course.total_chapters;
+    });
+    setTotalChapters(tc);
+    setTotalCompletedChapters(cc);
+  }, [boughtCourses]);
 
   return (
     <Main>
@@ -67,6 +113,11 @@ const Mycourses = () => {
           <Left>
             <div className="progress">
               <img src={img1} alt="" />
+              <progress
+                id="imgprogress"
+                max={totalChapters}
+                value={totalCompletedChapters}
+              ></progress>
             </div>
             <h3>All Stats</h3>
             <div className="course-stats">
@@ -75,7 +126,9 @@ const Mycourses = () => {
                 style={{ border: "none", paddingLeft: "40px" }}
               >
                 <ReadingIcon style={{ color: "#56ccf2" }} />
-                <span> 3/7 courses</span>
+                <span>
+                  {totalCompletedChapters}/{totalChapters} courses
+                </span>
               </div>
               <div className="box2">
                 <MdQuiz style={{ color: "#56ccf2" }} />
@@ -87,7 +140,7 @@ const Mycourses = () => {
               </div>
               <div className="box4">
                 <MdTimelapse style={{ color: "#56ccf2" }} />
-                <span>2 hours learning</span>
+                <span>{learningHours} hours learning</span>
               </div>
             </div>
             <div className="enrolledcourses">
@@ -100,7 +153,10 @@ const Mycourses = () => {
                       id={item.id}
                       title={item.topic}
                       subject={item.subject}
+                      completed={progress[index].completed_chapters}
+                      total={progress[index].total_chapters}
                     />
+                    {}
                     <hr />
                   </>
                 ))}
@@ -156,6 +212,14 @@ const Left = styled.div`
   margin-left: 25px;
   .progress > img {
     width: 100%;
+  }
+  #imgprogress {
+    position: relative;
+    top: -58px;
+    left: 54px;
+    color: purple;
+    width: 80%;
+    height: 20px;
   }
   .course-stats {
     box-shadow: 0px 3px 10px #a8a8a8;

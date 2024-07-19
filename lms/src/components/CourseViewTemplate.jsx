@@ -114,13 +114,6 @@ const CourseViewTemplate = () => {
     };
 
     fetchBoughtCourses();
-
-    // for (let i = 0; i < temp.length; i++) {
-    //   if (temp[i].course == id) {
-    //     setCompletedChapters(temp[i].completed_chapters);
-    //   }
-    // }
-    // console.log(completedChapters);
   }, []);
 
   useEffect(() => {
@@ -135,16 +128,7 @@ const CourseViewTemplate = () => {
           }
         );
         setCompletedChapters(response.data[0].completed_chapters);
-        // console.log(response.data[0].completed_chapters);
         console.log(completedChapters);
-
-        // for (let i = 0; i < temp.length; i++) {
-        //   if (temp[i].course == id) {
-        //     console.log(temp[i]);
-        //     setCompletedChapters(temp[i].completed_chapters);
-        //   }
-        // }
-        // console.log(completedChapters);
       } catch (error) {
         console.error("Error fetching bought courses:", error);
       }

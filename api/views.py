@@ -183,6 +183,15 @@ def get_bought_courses_table_data(request, id):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_bought_courses_table_data_without_id(request):
+    user = request.user
+    bought_courses = BoughtCourses.objects.filter(cart__user=user)
+    serializer = BoughtCoursesSerializer(bought_courses, many=True)
+    return Response(serializer.data)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def increment_completed_chapters(request):

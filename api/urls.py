@@ -22,6 +22,8 @@ urlpatterns = [
     path('bought_courses/', get_bought_courses, name='get_bought_courses'),
     path('bought_courses_table_data/<int:id>/', get_bought_courses_table_data,
          name='get_bought_courses_table_data'),
+    path('get_bought_courses_table_data_without_id/', get_bought_courses_table_data_without_id,
+         name='get_bought_courses_table_data_without_id'),
     path('top5_courses/', get_unbought_courses, name='get_unbought_courses'),
     path('increment_completed_chapters/', increment_completed_chapters,
          name='increment_completed_chapters'),

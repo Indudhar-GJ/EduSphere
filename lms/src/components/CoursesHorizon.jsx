@@ -6,7 +6,7 @@ import { RiFilePaper2Line } from "react-icons/ri";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
-const CoursesHorizon = ({ id, title, subject }) => {
+const CoursesHorizon = ({ id, title, subject, completed, total }) => {
   let navigate = useNavigate();
   const goToCourse = () => {
     navigate(`/course/${id}/`);
@@ -27,12 +27,16 @@ const CoursesHorizon = ({ id, title, subject }) => {
           <p style={{ fontSize: "150%" }}>{title}</p>
           <p>{subject}</p>
           <p>
-            Progress <progress id="completed" max="100" value="30"></progress>
+            Progress :
+            <progress id="completed" max={total} value={completed}></progress>
           </p>
         </div>
         <div className="infobar">
           <div className="bgcicon">
-            <SlBookOpen />
+            <SlBookOpen />{" "}
+            <span>
+              {completed}/{total}
+            </span>
           </div>
           <div className="bgcicon">
             <RiFilePaper2Line />
@@ -60,7 +64,10 @@ const Main = styled.div`
     border-radius: 5px;
   }
   .details {
-    margin-right: 405px;
+    margin-right: 385px;
+    span {
+      margin-left: 8px;
+    }
   }
   .infobar {
     display: flex;
@@ -71,8 +78,9 @@ const Main = styled.div`
     .bgcicon {
       background-color: #c5e8ff;
       color: black;
-      padding: 11px 45px 4px 10px;
+      padding: 11px 0 4px 10px;
       border-radius: 20px;
+      width: 85px;
     }
   }
 `;
