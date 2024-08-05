@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Quizprogress from "./Quizprogress";
 import axios from "axios";
 
-const Quiz = ({ data, setData }) => {
+const Quiz = ({ data, setData, unlockNextChapter }) => {
   const [selectedOption1, setSelectedOption1] = useState(false);
   const [selectedOption2, setSelectedOption2] = useState(false);
   const [selectedOption3, setSelectedOption3] = useState(false);
@@ -19,6 +19,15 @@ const Quiz = ({ data, setData }) => {
     setSelectedOption3(false);
     setSelectedOption4(false);
   };
+
+  useEffect(() => {
+    setAllToNull();
+    setShowMarks(false);
+    setQuizDataIndex(0);
+    setMarks(0);
+    setGivenAns([]);
+    console.log("reloaded");
+  }, [data]);
 
   const loadSelectedAnswer = () => {
     const currentQuestion = data?.data?.[quizDataIndex];
@@ -202,6 +211,7 @@ const Quiz = ({ data, setData }) => {
                     onClick={() => {
                       setQuizDataIndex((prev) => prev + 1);
                       checkAnswer();
+                      unlockNextChapter();
                     }}
                   >
                     YES

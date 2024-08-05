@@ -208,6 +208,7 @@ def get_quiz_data(request, id, chapterId):
 def increment_completed_chapters(request):
     user = request.user
     course_id = request.data.get('course_id')
+    chapter_id = request.data.get('chapter_id')
 
     if not course_id:
         return Response({'detail': 'Course ID is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -215,7 +216,8 @@ def increment_completed_chapters(request):
     bought_course = get_object_or_404(
         BoughtCourses, cart__user=user, course_id=course_id)
 
-    bought_course.completed_chapters += 1
+    bought_course.completed_chapters = max(
+        int(bought_course.completed_chapters), chapter_id)
     bought_course.save()
 
     return Response({'message': 'Completed chapters incremented', 'completed_chapters': bought_course.completed_chapters}, status=status.HTTP_200_OK)
@@ -310,14 +312,14 @@ def get_user_cart(request):
 @api_view(['POST'])
 @csrf_exempt
 def check_quiz_answers(request):
-    print("request dat      " + str(request.data))
+    # print("request dat      " + str(request.data))
+    correct_answer_return = 0
     serializer = QuizAnswerSerializer(data=request.data, many=True)
     if serializer.is_valid():
         quiz_answers = serializer.validated_data
         for answer in quiz_answers:
             try:
                 quiz = Quiz.objects.get(id=answer['id'])
-                correct_answer_return = 0
                 if int(quiz.correct_option) == int(answer['option']):
                     correct_answer_return += 1
                     quiz.solved_at = timezone.now()
@@ -328,7 +330,7 @@ def check_quiz_answers(request):
                 #     print("solved at is : " + str(quiz.solved_at))
             except Quiz.DoesNotExist:
                 return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'score': correct_answer_return+1}, status=status.HTTP_200_OK)
+        return Response({'score': correct_answer_return}, status=status.HTTP_200_OK)
     else:
         print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

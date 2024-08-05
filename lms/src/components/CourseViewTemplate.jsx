@@ -137,6 +137,7 @@ const CourseViewTemplate = () => {
     try {
       const response = await axios.post("/increment_completed_chapters/", {
         course_id: id,
+        chapter_id: chapterId,
       });
       // setMessage(response.data.message);
       setCompletedChapters(response.data.completed_chapters);
@@ -265,7 +266,11 @@ const CourseViewTemplate = () => {
                 </>
               )}
               <Container4>
-                <Quiz data={quizData} setData={setQuizData} />
+                <Quiz
+                  data={quizData}
+                  setData={setQuizData}
+                  unlockNextChapter={incrementChapters}
+                />
               </Container4>
             </div>
           </Container3>
