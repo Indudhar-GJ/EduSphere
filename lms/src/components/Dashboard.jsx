@@ -16,6 +16,7 @@ import Event from "./Event";
 import SideNavbar from "./SideNavbar";
 import TopNavbar from "./TopNavbar";
 import "./axios";
+import CourseCatalog from "./CourseCatalog";
 
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180;
@@ -247,7 +248,7 @@ const Dashboard = () => {
               </div>
             </Right>
             <FourthContainer>
-              <h3>My Courses</h3>
+              {/* <h3>My Courses</h3>
               <div className="mycourses">
                 <Course
                   id="id"
@@ -267,11 +268,12 @@ const Dashboard = () => {
                   content="full content"
                   teacher="teach"
                 />
-              </div>
+              </div> */}
             </FourthContainer>
           </ThirdContainer>
         </SecondContainer>
       </MainContainer>
+      <CourseCatalog />
     </div>
   );
 };

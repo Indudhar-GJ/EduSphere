@@ -9,6 +9,7 @@ import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
 import BlurPopup from "./BlurPopup";
 import Quiz from "./Quiz";
 import Footer from "./Footer";
+import Quizprogress from "./Quizprogress";
 
 const CourseViewTemplate = () => {
   const [chapterData, setChapterData] = useState(null);
@@ -22,6 +23,7 @@ const CourseViewTemplate = () => {
   const [boughtCourses, setBoughtCourses] = useState([]);
   const [completedChapters, setCompletedChapters] = useState(0);
   const [temp, setTemp] = useState([]);
+  const [quizData, setQuizData] = useState(null);
 
   const navigate = useNavigate();
 
@@ -52,15 +54,6 @@ const CourseViewTemplate = () => {
     }
   };
 
-  const handleRemoveItem = async (courseId) => {
-    try {
-      const response = await removeItemFromCart(cart.id, courseId);
-      setCart(response.data);
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-    }
-  };
-
   useEffect(() => {
     if (!localStorage.getItem("access_token")) {
       window.location.href = "/login";
@@ -70,20 +63,24 @@ const CourseViewTemplate = () => {
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
-        const [courseResponse, chapterResponse, chapterCountResponse] =
-          await Promise.all([
-            axios.get(`http://localhost:8000/dlearn/courses/${id}/`),
-            axios.get(
-              `http://localhost:8000/dlearn/courses/${id}/${chapterId}/`
-            ),
-            axios.get(
-              `http://localhost:8000/dlearn/courses/chapterscount/${id}/`
-            ),
-          ]);
+        const [
+          courseResponse,
+          chapterResponse,
+          quizResponse,
+          chapterCountResponse,
+        ] = await Promise.all([
+          axios.get(`http://localhost:8000/dlearn/courses/${id}/`),
+          axios.get(`http://localhost:8000/dlearn/courses/${id}/${chapterId}/`),
+          axios.get(`http://localhost:8000/dlearn/quizs/${id}/${chapterId}/`),
+          axios.get(
+            `http://localhost:8000/dlearn/courses/chapterscount/${id}/`
+          ),
+        ]);
 
         setCourseData(courseResponse.data[0]);
         setChapterData(chapterResponse.data[0]);
-        // console.log(chapterResponse.data[0]);
+        setQuizData(quizResponse);
+        // console.log(quizResponse);
         setChapterCount(chapterCountResponse.data);
       } catch (error) {
         console.error("Error fetching course data:", error);
@@ -128,7 +125,7 @@ const CourseViewTemplate = () => {
           }
         );
         setCompletedChapters(response.data[0].completed_chapters);
-        console.log(completedChapters);
+        // console.log(completedChapters);
       } catch (error) {
         console.error("Error fetching bought courses:", error);
       }
@@ -268,7 +265,7 @@ const CourseViewTemplate = () => {
                 </>
               )}
               <Container4>
-                <Quiz />
+                <Quiz data={quizData} setData={setQuizData} />
               </Container4>
             </div>
           </Container3>

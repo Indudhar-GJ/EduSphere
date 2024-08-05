@@ -24,10 +24,11 @@ const CourseCatalog = () => {
   return (
     <div>
       <Main>
-        <SideNavbar />
+        {/* <SideNavbar /> */}
         <SecondContainer>
-          <TopNavbar title="Course Catalog" />
+          {/* <TopNavbar title="Course Catalog" /> */}
           <ThirdContainer>
+            <h1>Courses</h1>
             <Options>
               <span>All</span>
               <span>Top 10</span>
@@ -341,8 +342,11 @@ const SecondContainer = styled.div`
   justify-content: start;
 `;
 const ThirdContainer = styled.div`
-  margin: 15px 45px;
+  margin: 35px 45px;
   margin-bottom: 80px;
+  h1 {
+    margin-bottom: 45px;
+  }
 `;
 const Options = styled.div`
   span {

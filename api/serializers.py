@@ -43,3 +43,14 @@ class BoughtCoursesSerializer(serializers.ModelSerializer):
     class Meta:
         model = BoughtCourses
         fields = '__all__'
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = '__all__'
+
+
+class QuizAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    option = serializers.CharField(max_length=200)

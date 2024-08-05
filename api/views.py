@@ -2,6 +2,7 @@ from .serializers import CartSerializer, CartItemSerializer
 from .models import Cart, CartItem
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework import viewsets, status
 from django.shortcuts import render
 from .models import *
@@ -11,6 +12,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view, action, permission_classes
 from django.shortcuts import get_object_or_404
 from django.db.models import Max
+from django.views.decorators.csrf import csrf_exempt
 
 
 class CourseView(viewsets.ModelViewSet):
@@ -192,6 +194,15 @@ def get_bought_courses_table_data_without_id(request):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+def get_quiz_data(request, id, chapterId):
+    quizdata = CourseChapter.objects.filter(course_id=id, chapter_no=chapterId)
+    chapter_ids = quizdata.values_list('id', flat=True)
+    quizs = Quiz.objects.filter(chapter_id__in=chapter_ids)
+    serializer = QuizSerializer(quizs, many=True)
+    return Response(serializer.data)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def increment_completed_chapters(request):
@@ -293,3 +304,31 @@ def get_user_cart(request):
     cart, created = Cart.objects.get_or_create(user=user)
     serializer = CartSerializer(cart)
     return Response(serializer.data)
+
+
+# @permission_classes([IsAuthenticated])
+@api_view(['POST'])
+@csrf_exempt
+def check_quiz_answers(request):
+    print("request dat      " + str(request.data))
+    serializer = QuizAnswerSerializer(data=request.data, many=True)
+    if serializer.is_valid():
+        quiz_answers = serializer.validated_data
+        for answer in quiz_answers:
+            try:
+                quiz = Quiz.objects.get(id=answer['id'])
+                correct_answer_return = 0
+                if int(quiz.correct_option) == int(answer['option']):
+                    correct_answer_return += 1
+                    quiz.solved_at = timezone.now()
+                    quiz.save()
+                # else:
+                #     print("correct answer is : " + str(quiz.correct_option))
+                #     print("given answer is : " + str(answer['option']))
+                #     print("solved at is : " + str(quiz.solved_at))
+            except Quiz.DoesNotExist:
+                return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'score': correct_answer_return+1}, status=status.HTTP_200_OK)
+    else:
+        print(serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

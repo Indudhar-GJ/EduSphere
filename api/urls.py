@@ -19,6 +19,8 @@ urlpatterns = [
          get_course, name='get_course'),
     path('courses/<int:id>/<int:chapterId>/',
          get_course_chapters, name='course-chapters'),
+    path('quizs/<int:id>/<int:chapterId>/',
+         get_quiz_data, name='get_quiz_data'),
     path('bought_courses/', get_bought_courses, name='get_bought_courses'),
     path('bought_courses_table_data/<int:id>/', get_bought_courses_table_data,
          name='get_bought_courses_table_data'),
@@ -27,5 +29,6 @@ urlpatterns = [
     path('top5_courses/', get_unbought_courses, name='get_unbought_courses'),
     path('increment_completed_chapters/', increment_completed_chapters,
          name='increment_completed_chapters'),
+    path('check-quiz-answers/', check_quiz_answers, name='check_quiz_answers'),
     path('', include(router.urls)),
 ]

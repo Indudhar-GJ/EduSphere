@@ -22,7 +22,8 @@ const LoadingPopup = (props) => {
               }}
             />
           </span> */}
-          {props.children}
+          {/* {props.children} */}
+          <progress></progress>
         </div>
       </div>
     </Main>

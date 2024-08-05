@@ -61,3 +61,14 @@ class BoughtCourses(models.Model):
     completed_chapters = models.IntegerField(default=0)
     total_chapters = models.IntegerField()
     Bought_at = models.DateTimeField(auto_now_add=True)
+
+
+class Quiz(models.Model):
+    question = models.CharField(max_length=100)
+    option1 = models.CharField(max_length=50)
+    option2 = models.CharField(max_length=50)
+    option3 = models.CharField(max_length=50)
+    option4 = models.CharField(max_length=50)
+    correct_option = models.IntegerField()
+    solved_at = models.DateTimeField(blank=True)
+    chapter = models.ForeignKey(CourseChapter, on_delete=models.CASCADE)
