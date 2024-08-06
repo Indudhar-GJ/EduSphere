@@ -85,7 +85,7 @@ const Mycourses = () => {
       )
       .then((response) => {
         setProgress(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       })
       .catch((error) => {
         console.error("Error fetching bought courses:", error);
@@ -96,8 +96,8 @@ const Mycourses = () => {
     let cc = 0,
       tc = 0;
     progress.forEach((course) => {
-      cc += course.completed_chapters;
-      tc += course.total_chapters;
+      cc += course?.completed_chapters;
+      tc += course?.total_chapters;
     });
     setTotalChapters(tc);
     setTotalCompletedChapters(cc);
@@ -153,7 +153,7 @@ const Mycourses = () => {
                       id={item.id}
                       title={item.topic}
                       subject={item.subject}
-                      completed={progress[index].completed_chapters}
+                      completed={progress[index]?.completed_chapters}
                       total={progress[index].total_chapters}
                     />
                     {}
@@ -197,6 +197,7 @@ const Main = styled.div`
 `;
 const SecondContainer = styled.div`
   margin-left: 80px;
+  width: 100%;
 `;
 const ThirdContainer = styled.div`
   margin: 15px 35px;
@@ -256,6 +257,6 @@ const Right = styled.div`
     margin: 20px 0;
   }
   overflow-y: auto;
-  height: 85vh;
+  height: 87vh;
   /* margin-top: -55px; */
 `;

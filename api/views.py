@@ -1,3 +1,4 @@
+from itertools import count
 from .serializers import CartSerializer, CartItemSerializer
 from .models import Cart, CartItem
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,9 @@ from rest_framework.decorators import api_view, action, permission_classes
 from django.shortcuts import get_object_or_404
 from django.db.models import Max
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime, timedelta
+from pytz import timezone as pytz_timezone
+from rest_framework.views import APIView
 
 
 class CourseView(viewsets.ModelViewSet):
@@ -195,6 +199,23 @@ def get_bought_courses_table_data_without_id(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pie_chart_boughtcourse_course(request):
+    user = request.user
+    bought_courses = BoughtCourses.objects.filter(
+        cart__user=user).select_related('course')
+
+    bought_courses_data = []
+    for bought_course in bought_courses:
+        bought_course_data = BoughtCoursesSerializer(bought_course).data
+        course_data = CourseSerializer(bought_course.course).data
+        bought_course_data['course'] = course_data
+        bought_courses_data.append(bought_course_data)
+
+    return Response(bought_courses_data)
+
+
+@api_view(['GET'])
 def get_quiz_data(request, id, chapterId):
     quizdata = CourseChapter.objects.filter(course_id=id, chapter_no=chapterId)
     chapter_ids = quizdata.values_list('id', flat=True)
@@ -308,29 +329,74 @@ def get_user_cart(request):
     return Response(serializer.data)
 
 
-# @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 @csrf_exempt
 def check_quiz_answers(request):
-    # print("request dat      " + str(request.data))
     correct_answer_return = 0
+    user = request.user
     serializer = QuizAnswerSerializer(data=request.data, many=True)
+
     if serializer.is_valid():
         quiz_answers = serializer.validated_data
+
         for answer in quiz_answers:
             try:
                 quiz = Quiz.objects.get(id=answer['id'])
-                if int(quiz.correct_option) == int(answer['option']):
+                is_correct = int(quiz.correct_option) == int(answer['option'])
+                if is_correct:
                     correct_answer_return += 1
-                    quiz.solved_at = timezone.now()
-                    quiz.save()
-                # else:
-                #     print("correct answer is : " + str(quiz.correct_option))
-                #     print("given answer is : " + str(answer['option']))
-                #     print("solved at is : " + str(quiz.solved_at))
+
+                # Create or update UserQuiz entry
+                user_quiz, created = UserQuiz.objects.get_or_create(
+                    user=user,
+                    quiz=quiz,
+                    defaults={'solved_at': timezone.now(),
+                              'is_correct': is_correct}
+                )
+
+                if not created:
+                    # If the entry already exists, update it
+                    user_quiz.solved_at = timezone.now()
+                    user_quiz.is_correct = is_correct
+                    user_quiz.save()
+
             except Quiz.DoesNotExist:
                 return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+
         return Response({'score': correct_answer_return}, status=status.HTTP_200_OK)
     else:
-        print(serializer.errors)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuizStatisticsView(APIView):
+    def get(self, request):
+        user = request.user
+        IST = pytz_timezone('Asia/Kolkata')
+        user_quizzes = UserQuiz.objects.filter(user=user)
+
+        # Convert solved_at to IST and strip time to get the date
+        quiz_stats = {}
+        for user_quiz in user_quizzes:
+            if user_quiz.solved_at:
+                ist_time = user_quiz.solved_at.astimezone(IST)
+                date_str = ist_time.date().isoformat()
+                if date_str not in quiz_stats:
+                    quiz_stats[date_str] = 0
+                quiz_stats[date_str] += 1
+
+        # Convert dictionary to a sorted list of dictionaries
+        sorted_stats = sorted(quiz_stats.items(),
+                              key=lambda x: x[0], reverse=True)
+        top_7_stats = sorted_stats[:7]
+
+        # Format data for serialization
+        result = [
+            {'date': datetime.strptime(
+                date_str, '%Y-%m-%d').date(), 'number_of_quizzes': count}
+            for date_str, count in top_7_stats
+        ]
+
+        # Serialize the data
+        serializer = QuizStatisticsSerializer(result, many=True)
+
+        return Response(serializer.data)

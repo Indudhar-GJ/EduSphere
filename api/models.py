@@ -70,5 +70,14 @@ class Quiz(models.Model):
     option3 = models.CharField(max_length=50)
     option4 = models.CharField(max_length=50)
     correct_option = models.IntegerField()
-    solved_at = models.DateTimeField(blank=True)
     chapter = models.ForeignKey(CourseChapter, on_delete=models.CASCADE)
+
+
+class UserQuiz(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    solved_at = models.DateTimeField(blank=True)
+    is_correct = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'quiz')

@@ -47,10 +47,11 @@ const Search = () => {
 
     fetchFilters();
   }, []);
-
+  const [btnclicked, setbtnclicked] = useState(false);
   const handleSearch = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setbtnclicked(true);
     try {
       const response = await axios.get(`http://localhost:8000/dlearn/search/`, {
         params: {
@@ -104,6 +105,15 @@ const Search = () => {
                     )
                   )}
                 </select>
+                {/* <input
+                  style={{ width: "80%" }}
+                  type="number"
+                  name=""
+                  id="dropdown"
+                  value={chapter}
+                  placeholder={"Maximum Chapters"}
+                  onChange={(e) => setChapter(e.target.value)}
+                /> */}
               </div>
               <div className="Teacher">
                 <select
@@ -149,12 +159,21 @@ const Search = () => {
                     )
                   )}
                 </select>
+                {/* <input
+                  style={{ width: "70%" }}
+                  type="number"
+                  name=""
+                  id="dropdown"
+                  value={maxPrice}
+                  placeholder={"Maximum Price"}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                /> */}
               </div>
             </div>
           </div>
         </Container2>
         <Container3>
-          <h2>Fetched these results :</h2>
+          {btnclicked && <h2>Fetched these results :</h2>}
           {error && <p>{error}</p>}
           {loading ? (
             <p

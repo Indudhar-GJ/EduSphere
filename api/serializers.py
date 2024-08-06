@@ -54,3 +54,8 @@ class QuizSerializer(serializers.ModelSerializer):
 class QuizAnswerSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     option = serializers.CharField(max_length=200)
+
+
+class QuizStatisticsSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    number_of_quizzes = serializers.IntegerField()

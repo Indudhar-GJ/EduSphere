@@ -17,6 +17,7 @@ import SideNavbar from "./SideNavbar";
 import TopNavbar from "./TopNavbar";
 import "./axios";
 import CourseCatalog from "./CourseCatalog";
+import axios from "axios";
 
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180;
@@ -46,7 +47,7 @@ const renderActiveShape = (props) => {
   return (
     <g>
       <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
-        {payload.name}
+        {payload.course.topic}
       </text>
       <Sector
         cx={cx}
@@ -77,7 +78,7 @@ const renderActiveShape = (props) => {
         y={ey}
         textAnchor={textAnchor}
         fill="#333"
-      >{`PV ${value}`}</text>
+      >{`Course ${value}`}</text>
       <text
         x={ex + (cos >= 0 ? 1 : -1) * 12}
         y={ey}
@@ -92,11 +93,51 @@ const renderActiveShape = (props) => {
 };
 
 const Dashboard = () => {
+  const [lineGraphData, setLineGraphData] = useState([]);
+
+  useEffect(() => {
+    const fetchQuizAnsweredData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/dlearn/quiz-statistics/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        );
+        setLineGraphData(response.data);
+        // console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching bought courses:", error);
+      }
+    };
+    fetchQuizAnsweredData();
+  }, []);
+
+  const [pieChartData, setPieChartData] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/dlearn/pie_chart_boughtcourse_course/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((response) => {
+        setPieChartData(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching bought courses:", error);
+      });
+  }, []);
+
   const PieData = [
-    { name: "Group A", value: 400 },
-    { name: "Group B", value: 300 },
-    { name: "Group C", value: 300 },
-    { name: "Group D", value: 200 },
+    { name1: "Group A", value: 400 },
+    { name1: "Group B", value: 300 },
+    { name1: "Group C", value: 300 },
+    { name1: "Group D", value: 200 },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -108,39 +149,8 @@ const Dashboard = () => {
   const LineData = [
     {
       name: "Page A",
-      uv: 4000,
       pv: 2400,
       amt: 2400,
-    },
-    {
-      name: "Page B",
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: "Page C",
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: "Page D",
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: "Page E",
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: "Page F",
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
     },
     {
       name: "Page G",
@@ -164,13 +174,14 @@ const Dashboard = () => {
         <SideNavbar />
         <SecondContainer>
           <TopNavbar title="Dashboard" />
+          <hr />
           <ThirdContainer>
             <Left>
               <h3>OVERVIEW</h3>
-              <Stats>
+              {/* <Stats>
                 <div className="box">
                   <p className="title">Courses in progress</p> <br />
-                  <p className="content">3</p>
+                  <p className="content">{pieChartData?.length}</p>
                 </div>
                 <div className="box">
                   <p className="title">Active Prototype</p>
@@ -187,14 +198,14 @@ const Dashboard = () => {
                   <br />
                   <p className="content">270</p>
                 </div>
-              </Stats>
+              </Stats> */}
               <Stat2>
                 <div className="chart">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       width={500}
                       height={200}
-                      data={LineData}
+                      data={lineGraphData}
                       margin={{
                         top: 5,
                         right: 30,
@@ -203,13 +214,13 @@ const Dashboard = () => {
                       }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
+                      <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
                       <Legend />
                       <Line
                         type="monotone"
-                        dataKey="pv"
+                        dataKey="number_of_quizzes"
                         stroke="#8884d8"
                         activeDot={{ r: 8 }}
                       />
@@ -223,13 +234,13 @@ const Dashboard = () => {
                       <Pie
                         activeIndex={activeIndex}
                         activeShape={renderActiveShape}
-                        data={PieData}
+                        data={pieChartData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
                         outerRadius={80}
                         fill="#8884d8"
-                        dataKey="value"
+                        dataKey="completed_chapters"
                         onMouseEnter={onPieEnter}
                       />
                     </PieChart>
@@ -247,29 +258,6 @@ const Dashboard = () => {
                 <Event />
               </div>
             </Right>
-            <FourthContainer>
-              {/* <h3>My Courses</h3>
-              <div className="mycourses">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-              </div> */}
-            </FourthContainer>
           </ThirdContainer>
         </SecondContainer>
       </MainContainer>

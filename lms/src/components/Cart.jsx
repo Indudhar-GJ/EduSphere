@@ -18,6 +18,8 @@ const Cart = () => {
   const [giftPopup, setGiftPopup] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const [totalCartValue, setTotalCartValue] = useState(0);
+  const [totalDiscountValue, setDiscountValue] = useState(15);
+  const [totalNetValue, setTotalNetValue] = useState(0);
   const [cartId, setCartId] = useState(0);
   const [delItmeId, setDelItemId] = useState(-1);
 
@@ -166,13 +168,18 @@ const Cart = () => {
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <span>Discount</span>
-                    <span>0%</span>
+                    <span>{totalDiscountValue}%</span>
                   </div>
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <span>Cart total</span>
-                    <span>4999</span>
+                    <span>
+                      {Math.floor(
+                        totalCartValue -
+                          (totalCartValue * totalDiscountValue) / 100
+                      )}
+                    </span>
                   </div>
                 </div>
                 <div

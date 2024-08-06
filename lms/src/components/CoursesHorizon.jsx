@@ -38,10 +38,10 @@ const CoursesHorizon = ({ id, title, subject, completed, total }) => {
               {completed}/{total}
             </span>
           </div>
-          <div className="bgcicon">
+          {/* <div className="bgcicon">
             <RiFilePaper2Line />
-          </div>
-          <HiDotsHorizontal style={{ marginLeft: "15px", fontSize: "25px" }} />
+          </div> */}
+          {/* <HiDotsHorizontal style={{ marginLeft: "15px", fontSize: "25px" }} /> */}
         </div>
       </Main>
     </>
@@ -56,8 +56,8 @@ const Main = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 25px;
-  width: auto;
-  margin: 5px 0;
+  width: 100%;
+  margin: 5px 8px;
   .icon {
     padding: 15px 20px;
     background-color: #e5d1ff;

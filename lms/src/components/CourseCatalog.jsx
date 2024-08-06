@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import TopNavbar from "./TopNavbar";
 import styled from "styled-components";
 import SideNavbar from "./SideNavbar";
@@ -12,6 +12,7 @@ import { FaThermometerThreeQuarters } from "react-icons/fa";
 import { BsFillCameraReelsFill } from "react-icons/bs";
 import { TbWritingSign } from "react-icons/tb";
 import Footer from "./Footer";
+import axios from "axios";
 
 const CourseCatalog = () => {
   useEffect(() => {
@@ -21,6 +22,40 @@ const CourseCatalog = () => {
       console.log("not auth");
     }
   }, []);
+
+  const [allCourses, setAllCourses] = useState([]);
+  const [courseOrder, setCourseOrder] = useState("All");
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/dlearn/coursedata/")
+      .then((response) => {
+        setAllCourses(response.data);
+        // console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    const sortedCourses = [...allCourses];
+    if (courseOrder === "All") {
+      sortedCourses.sort((a, b) => a.id - b.id);
+    } else if (courseOrder === "Registration") {
+      sortedCourses.sort(
+        (a, b) => b.no_of_registrations - a.no_of_registrations
+      );
+    } else if (courseOrder === "RatingHL") {
+      sortedCourses.sort((a, b) => b.rating - a.rating);
+    } else if (courseOrder === "PriceHL") {
+      sortedCourses.sort((a, b) => b.price - a.price);
+    } else if (courseOrder === "PriceLH") {
+      sortedCourses.sort((a, b) => a.price - b.price);
+    }
+    setAllCourses(sortedCourses);
+  }, [courseOrder]);
+
   return (
     <div>
       <Main>
@@ -30,139 +65,47 @@ const CourseCatalog = () => {
           <ThirdContainer>
             <h1>Courses</h1>
             <Options>
-              <span>All</span>
-              <span>Top 10</span>
-              <span>Intresting</span>
-              <span>Rated</span>
-              <span>Newest</span>
+              <span onClick={() => setCourseOrder("All")}>All</span>
+              <span onClick={() => setCourseOrder("Registration")}>
+                Registration
+              </span>
+              <span onClick={() => setCourseOrder("RatingHL")}>
+                Rating : High to Low
+              </span>
+              <span onClick={() => setCourseOrder("PriceHL")}>
+                Price : High to Low
+              </span>
+              <span onClick={() => setCourseOrder("PriceLH")}>
+                Price : Low to High
+              </span>
             </Options>
             <CourseDetail>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>{" "}
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
+              {allCourses.map((item, index) => (
+                <>
+                  <div key={index} className="section">
+                    <Course
+                      id={item.id}
+                      subject={item.subject}
+                      content={item.topic}
+                      teacher={
+                        item.teacher.first_name + " " + item.teacher.last_name
+                      }
+                      chapters={item.no_of_chapters}
+                    />
+                    <div className="innersec">
+                      <p>
+                        Lorem ipsum dolor, sit amet consectetur adipisicing
+                        elit.
+                      </p>
+                      <br />
+                      <div>
+                        <p>Price &#8377;{item.price}</p>
+                        <p>Rating {item.rating}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
-              <div className="section">
-                <Course
-                  id="id"
-                  subject="sub"
-                  content="full content"
-                  teacher="teach"
-                />
-                <div className="innersec">
-                  <p>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  </p>
-                  <br />
-                  <div>
-                    <p>Price $4.99</p>
-                    <p>Rating 4.7</p>
-                  </div>
-                </div>
-              </div>
+                </>
+              ))}
             </CourseDetail>
             <Container4>
               <h1>Courses from Top Catagory</h1>

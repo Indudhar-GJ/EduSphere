@@ -26,11 +26,11 @@ const App = () => {
         <Route path="/search" element={<Search />} />
         <Route path="/course/:id" element={<CourseViewTemplate />} />
         <Route path="/course/:id/:chapter" element={<CourseViewTemplate />} />
-        <Route path="/course-catalog" element={<CourseCatalog />} />
+        {/* <Route path="/course-catalog" element={<CourseCatalog />} /> */}
         <Route path="/pricing" element={<Membership />} />
-        <Route path="/course-details" element={<CourseDetails />} />
+        <Route path="/course-details/:id" element={<CourseDetails />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/temp" element={<Temp />} />
+        {/* <Route path="/temp" element={<Temp />} /> */}
       </Routes>
     </>
   );

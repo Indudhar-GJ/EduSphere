@@ -5,7 +5,12 @@ import { Scrollbars } from "react-custom-scrollbars-2";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingPopup from "./LoadingPopup";
-import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
+import {
+  getUserCart,
+  addItemToCart,
+  removeItemFromCart,
+  getCart,
+} from "./CartServices";
 import BlurPopup from "./BlurPopup";
 import Quiz from "./Quiz";
 import Footer from "./Footer";
@@ -207,7 +212,15 @@ const CourseViewTemplate = () => {
                 <h1>{courseData?.topic}</h1>
                 <h3>{courseData?.subject}</h3>
               </div>
-              <div className="rt">
+              <div
+                className="rt"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div className="addCartbtn">
                   <button
                     onClick={() => handleAddItem(courseData.id, 1)}
@@ -215,8 +228,24 @@ const CourseViewTemplate = () => {
                   >
                     Add To Cart
                   </button>
-                  <Link to="/cart">Go To Cart</Link>
                 </div>
+                <button
+                  type="submit"
+                  style={{
+                    padding: "8px 10px",
+                    marginBottom: "5px",
+                    marginTop: "-12px",
+                    borderRadius: "5px",
+                    border: "none",
+                  }}
+                >
+                  <Link
+                    style={{ color: "black", textDecoration: "none" }}
+                    to="/cart"
+                  >
+                    Go To Cart
+                  </Link>
+                </button>
                 <p>ETA: {chapterData?.time_to_complete} hours</p>
               </div>
             </div>
@@ -239,12 +268,10 @@ const CourseViewTemplate = () => {
 
                     {locked ? (
                       <BlurPopup trigger={locked} setTrigger={setLocked}>
-                        <Link
-                          onClick={() => handleAddItem(courseData.id, 1)}
-                          to="/cart"
-                        >
+                        {/* <Link onClick={() => handleAddItem(courseData.id, 1)}> */}
+                        <a onClick={() => navigate(`/course-details/${id}`)}>
                           Buy This course to View
-                        </Link>
+                        </a>
                       </BlurPopup>
                     ) : (
                       chapter > completedChapters + 1 && (
