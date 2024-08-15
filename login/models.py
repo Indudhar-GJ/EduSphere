@@ -10,3 +10,9 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ActiveOtps(models.Model):
+    email = models.EmailField()
+    otp = models.IntegerField()
+    sent_at = models.DateTimeField(auto_now_add=True)

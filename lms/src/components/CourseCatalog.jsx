@@ -296,6 +296,7 @@ const Options = styled.div`
     border: 2px solid #b3b3b3;
     padding: 4px 18px;
     border-radius: 25px;
+    cursor: pointer;
   }
   display: flex;
   gap: 10px;

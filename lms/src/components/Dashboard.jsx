@@ -134,8 +134,8 @@ const Dashboard = () => {
   }, []);
 
   const PieData = [
-    { name1: "Group A", value: 400 },
-    { name1: "Group B", value: 300 },
+    { topic: "Group A", value: 400 },
+    { topic: "Group B", value: 300 },
     { name1: "Group C", value: 300 },
     { name1: "Group D", value: 200 },
   ];
@@ -246,6 +246,9 @@ const Dashboard = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
+                {/* <div className="overdis">
+                  <h4>Complete Courses to View Statistics</h4>
+                </div> */}
               </Stat2>
             </Left>
             <Right>
@@ -328,6 +331,13 @@ const Stat2 = styled.div`
   width: 100%;
   height: 280px;
   gap: 10px;
+  .overdis {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(17, 10, 10, 0.5);
+    position: absolute;
+  }
   .chart {
     padding: 15px 0;
     border: 2px solid #ababab;

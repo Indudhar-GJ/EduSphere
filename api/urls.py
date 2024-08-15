@@ -33,5 +33,6 @@ urlpatterns = [
          name='increment_completed_chapters'),
     path('check-quiz-answers/', check_quiz_answers, name='check_quiz_answers'),
     path('quiz-statistics/', QuizStatisticsView.as_view(), name='quiz-statistics'),
+    path('send_gift/', giftCourse, name='giftCourse'),
     path('', include(router.urls)),
 ]

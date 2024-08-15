@@ -44,7 +44,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'api'
+    'api',
+    'django_otp',
+    'django_otp.plugins.otp_email',
+    'django_otp.plugins.otp_totp',
+    'allauth',
+    'allauth.account',
 ]
 
 REST_FRAMEWORK = {
@@ -52,6 +57,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+# AUTHENTICATION_BACKENDS = [
+#     'allauth.account.auth_backends.AuthenticationBackend',
+# ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
@@ -65,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 SIMPLE_JWT = {
@@ -80,7 +89,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'lms/build')
+            os.path.join(BASE_DIR, 'lms/build'),
+            'templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -175,3 +185,12 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 USE_TZ = True
+
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'noreply.edusphere@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST_PASSWORD = 'mlyodaeigoftkpoz'
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'

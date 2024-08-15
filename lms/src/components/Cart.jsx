@@ -5,6 +5,8 @@ import Course from "./Course";
 import Popup from "./Popup";
 import { getUserCart, addItemToCart, removeItemFromCart } from "./CartServices";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const options = [
   { value: "Option 1", label: "Option 1" },
@@ -13,6 +15,7 @@ const options = [
 ];
 
 const Cart = () => {
+  const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState("");
   const [cart, setCart] = useState([]);
   const [giftPopup, setGiftPopup] = useState(false);
@@ -22,12 +25,18 @@ const Cart = () => {
   const [totalNetValue, setTotalNetValue] = useState(0);
   const [cartId, setCartId] = useState(0);
   const [delItmeId, setDelItemId] = useState(-1);
+  const [giftItemId, setGiftItemId] = useState(-1);
+  const [cartupdatereload, setCartupdatereload] = useState(true);
+
+  const [giftMail, setGiftMail] = useState("");
+  const [giftMsg, setGiftMsg] = useState("");
 
   useEffect(() => {
     getUserCart().then((response) => {
       setCart(response.data.items);
       setCartId(response.data.id);
     });
+    setCartupdatereload(true);
   }, []);
 
   useEffect(() => {
@@ -39,22 +48,20 @@ const Cart = () => {
     } catch {
       setTotalCartValue(0);
     }
-    getUserCart().then((response) => {
-      setCart(response.data.items);
-      setCartId(response.data.id);
-    });
+    if (cartupdatereload) {
+      getUserCart().then((response) => {
+        setCart(response.data.items);
+        setCartId(response.data.id);
+      });
+      setCartupdatereload(false);
+    }
   }, [cart]);
-
-  const handleAddItem = (courseId, quantity) => {
-    addItemToCart(cartId, courseId, quantity).then((response) => {
-      setCart(response.data.items);
-    });
-  };
 
   const handleRemoveItem = (courseId) => {
     removeItemFromCart(cartId, courseId).then((response) => {
       setCart(response.data.items);
     });
+    setCartupdatereload(true);
   };
 
   const handlePurchase = () => {
@@ -76,15 +83,71 @@ const Cart = () => {
     }
   }, []);
 
+  const sendGift = async () => {
+    const toastId = toast.loading("Sending Gift...");
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/dlearn/send_gift/",
+        {
+          sender: localStorage.getItem("username"),
+          email: giftMail,
+          courseId: giftItemId,
+          msg: giftMsg,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+      if (response.data.status === "200") {
+        // setCanChangePass(true);
+        // setFormDisplay("EnterNewPass");
+        handleRemoveItem(giftItemId);
+
+        toast.update(toastId, {
+          render: response.data.message,
+          type: "success",
+          isLoading: false,
+        });
+        setTimeout(() => {
+          toast.dismiss(toastId);
+        }, 2500);
+      } else {
+        toast.update(toastId, {
+          render: response.data.message,
+          type: "error",
+          isLoading: false,
+        });
+        setTimeout(() => {
+          toast.dismiss(toastId);
+        }, 2500);
+      }
+    } catch (error) {
+      console.log(error);
+
+      if (error.response) {
+        console.log(error.response.data.detail);
+      } else {
+        console.log("An error occurred");
+      }
+    }
+  };
+
   return (
     <MainContainer>
+      <ToastContainer />
       <SideNavbar />
       <Container1>
         <Container2>
           <h1>Cart</h1>
           {cart?.length && (
             <p>
-              <span style={{ fontWeight: 800 }}>{cart?.length || 0} items</span>
+              <span style={{ fontWeight: 800 }}>
+                {cart?.length || 0} items{" "}
+              </span>
               in your cart
             </p>
           )}
@@ -122,7 +185,10 @@ const Cart = () => {
                           <button
                             type="button"
                             className="gift"
-                            onClick={() => setGiftPopup(true)}
+                            onClick={() => {
+                              setGiftPopup(true);
+                              setGiftItemId(item.course.id);
+                            }}
                           >
                             Gift
                           </button>
@@ -207,9 +273,31 @@ const Cart = () => {
         <ContainerPopUp className="popup-content">
           <h2>Gift Card</h2>
           <p>E-Mail : </p>
-          <input type="text" placeholder="Enter Mail Id" />
+          <input
+            onChange={(e) => {
+              setGiftMail(e.target.value);
+            }}
+            type="text"
+            placeholder="Enter Mail Id"
+          />
           <p>Message : </p>
-          <textarea placeholder="Enter Message" cols={65} rows={5}></textarea>
+          <textarea
+            onChange={(e) => {
+              setGiftMsg(e.target.value);
+            }}
+            placeholder="Enter Message"
+            cols={65}
+            rows={5}
+          ></textarea>
+          <button
+            onClick={() => {
+              sendGift();
+              setGiftPopup(false);
+            }}
+            type="button"
+          >
+            Send Gift
+          </button>
         </ContainerPopUp>
       </Popup>
       <Popup trigger={deletePopup} setTrigger={setDeletePopup}>

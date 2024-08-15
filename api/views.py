@@ -1,10 +1,12 @@
 from itertools import count
+import json
 from .serializers import CartSerializer, CartItemSerializer
 from .models import Cart, CartItem
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import viewsets, status
+from django.http import JsonResponse
 from django.shortcuts import render
 from .models import *
 from .serializers import *
@@ -17,6 +19,9 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from pytz import timezone as pytz_timezone
 from rest_framework.views import APIView
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 class CourseView(viewsets.ModelViewSet):
@@ -400,3 +405,53 @@ class QuizStatisticsView(APIView):
         serializer = QuizStatisticsSerializer(result, many=True)
 
         return Response(serializer.data)
+
+
+# @permission_classes([IsAuthenticated])
+@csrf_exempt
+def giftCourse(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        sender = data.get('sender')
+        courseId = data.get('courseId')
+        msg = data.get('msg')
+        record = User.objects.filter(email=email).first()
+        print("sender is " + str(sender))
+        if not record:
+            return JsonResponse({"message": "No account found with this Email-ID", "status": "400"})
+        else:
+            context = {
+                "rname": record.username,
+                "sname": sender,
+                "msg": msg
+            }
+            html_mes = render_to_string("content/gift.html", context=context)
+            plain_mes = strip_tags(html_mes)
+
+            mes = EmailMultiAlternatives(
+                "Surprise! You've Received a Gift on EduSphere",
+                plain_mes,
+                "noreply.edusphere@gmail.com",
+                [email]
+            )
+
+            mes.attach_alternative(html_mes, "text/html")
+            mes.send()
+
+            user2 = User.objects.filter(username=record.username).first()
+            # user2id = user2.id
+            cart, created = Cart.objects.get_or_create(user_id=user2)
+            # cartid = cartid.id
+            courseId = Course.objects.filter(id=courseId).first()
+            newrecord = BoughtCourses(
+                cart=cart,
+                course=courseId,
+                completed_chapters=0,
+                total_chapters=0,
+                Bought_at=datetime.now()
+            )
+            newrecord.save()
+            # user2.
+
+            return JsonResponse({"message": "Gift Sent", "status": "200"})

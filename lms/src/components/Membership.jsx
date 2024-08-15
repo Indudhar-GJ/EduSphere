@@ -129,7 +129,10 @@ const Membership = () => {
             </div>
           </Container3>
           <Container4>
-            <h2>FAQ's</h2>
+            {/* <h2>FAQ's</h2> */}
+            <br />
+            <br />
+            <br />
             <div className="ques"></div>
           </Container4>
         </Container1>
